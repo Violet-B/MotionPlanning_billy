@@ -106,6 +106,10 @@ class QueuePrior:
 
 
 def hybrid_astar_planning(sx, sy, syaw, gx, gy, gyaw, ox, oy, xyreso, yawreso):
+    """
+    xyreso: xy grid resolution
+    yawreso: angle grid resolution
+    """
     sxr, syr = round(sx / xyreso), round(sy / xyreso)
     gxr, gyr = round(gx / xyreso), round(gy / xyreso)
     syawr = round(rs.pi_2_pi(syaw) / yawreso)

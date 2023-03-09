@@ -1,6 +1,7 @@
 """
 LQR and PID Controller
 author: huiming zhou
+update: ning wang
 """
 
 import os

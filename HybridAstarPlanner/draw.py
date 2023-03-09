@@ -58,8 +58,8 @@ class Car:
                  linewidth=1, color='black')
 
         Arrow(x, y, yaw, L / 2, 'black')
-        # plt.axis("equal")
-        # plt.show()
+        plt.axis("equal")
+        plt.show()
 
 
 def draw_car(x, y, yaw, steer, C, color='black'):
@@ -111,4 +111,4 @@ def draw_car(x, y, yaw, steer, C, color='black'):
 
 if __name__ == '__main__':
     # Arrow(-1, 2, 60)
-    Car(0, 0, 1, 2, 60)
+    c = Car(0, 0, 1, 2, 60)
