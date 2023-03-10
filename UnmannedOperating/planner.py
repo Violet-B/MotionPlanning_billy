@@ -6,9 +6,9 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.spatial.kdtree as kd
-from algorithm import astar
+from PlanningAlgorithm import astar
 from heapdict import heapdict
-import algorithm.reeds_shepp as rs
+import PlanningAlgorithm.reeds_shepp as rs
 from config import ParaConfig
 from units import *
 
@@ -50,7 +50,7 @@ class Para:
 
 
 class Path:
-    def __init__(self, x, y, yaw, yawt, direction, cost):
+    def __init__(self, x, y, yaw, direction, cost):
         self.x = x
         self.y = y
         self.yaw = yaw

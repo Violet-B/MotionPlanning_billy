@@ -5,9 +5,10 @@ from config import ParaConfig
 import planner as P
 import time
 import math
-import algorithm.reeds_shepp as rs
+import PlanningAlgorithm.reeds_shepp as rs
 import pickle
 import sys, os
+from ControlAlgorithm.LQR_Kinematic_Model import control_Kinematic
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) +
                 "/../../MotionPlanning/")
@@ -21,7 +22,7 @@ def draw_path(Tcar, path, C, Obs):
     obsx, obsy = Obs.get_obs_shape()
     barrierx, barriery = Obs.design_obstacles()
 
-    plt.pause(10)
+    plt.pause(1)
 
     for k in range(len(x)):
         plt.cla()
@@ -35,7 +36,7 @@ def draw_path(Tcar, path, C, Obs):
         else:
             steer = 0.0
 
-        Tcar.draw_model(x[k], y[k], yaw[k], steer)
+        Tcar.draw_car(x[k], y[k], yaw[k], steer)
         plt.pause(0.0001)
 
 
@@ -72,12 +73,12 @@ def main():
             unloadx, unloady, uyawh,
             oox, ooy, C.XY_RESO, C.YAW_RESO)
 
-        # path_2 = P.hybrid_astar_planning(
-        #     unloadx, unloady, uyawh,
-        #     startx, starty, syawh, 
-        #     oox, ooy, C.XY_RESO, C.YAW_RESO)
+        path_2 = P.hybrid_astar_planning(
+            unloadx, unloady, uyawh,
+            startx, starty, syawh, 
+            oox, ooy, C.XY_RESO, C.YAW_RESO)
         
-        path_0.union([path_1])
+        path_0.union([path_1, path_2])
         path = path_0
 
         output_hal = open("UnmannedOperating/data/trailer_path_" + str(C.INDEX) + ".pkl", 'wb')
@@ -94,14 +95,12 @@ def main():
     plt.axis("equal")
     plt.xlim(0, 100)
     plt.ylim(0, 100)
-
-    # test draw car
-    # Tcar.draw_model(startx, starty, syawh, 0.0)
-    # Tcar.draw_model(loadx, loady, lyawh, 0.0)
-    # Tcar.draw_model(unloadx, unloady, uyawh, 0.0)
     
-    # Draw Path
+    # Draw Path Planning
     draw_path(Tcar, path, C, Obs)
+
+    # TODO Draw Car Control
+    # control_Kinematic([path_0, path_1, path_2], path, Tcar)
 
     # Done
     plt.show()

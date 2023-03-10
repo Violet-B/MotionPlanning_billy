@@ -80,12 +80,12 @@ class Obstacle:
         for i in range(60):
             ox.append(95.0)
             oy.append(i)
-        for i in range(20):
-            ox.append(50.0)
-            oy.append(30-i)
-        for i in range(20):
-            ox.append(20.0)
-            oy.append(30-i)
+        # for i in range(20):
+        #     ox.append(50.0)
+        #     oy.append(30-i)
+        # for i in range(20):
+        #     ox.append(20.0)
+        #     oy.append(30-i)
 
         # wall
         for i in range(100):
@@ -111,11 +111,11 @@ class Obstacle:
         initXvalue = 4
         rangex = self.size_obs[-1][1] - initXvalue
         delta = random.randint(initXvalue, rangex)
-        return x + delta, y - self.C.RB, np.deg2rad(90.0)
+        return x + delta, y - self.C.RF - 2, np.deg2rad(90.0)
 
     def get_unload_pos(self):
         len = self.size_obs[0][0]
-        beta = self.C.RB
+        beta = self.C.RF + 2
         angle = self.angle_obs[0]
         x, y = self.pos_obs[0][0] + len * cos(angle), self.pos_obs[0][1] + len * sin(angle)
         angle_num = self.angle_obs[0] / pi * 180 + 90
@@ -124,7 +124,21 @@ class Obstacle:
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
+    from TrailerCar import TrailerCar
+    Tcar = TrailerCar()
     Obs = Obstacle()
+
+    # Init Postions
+    startx, starty, syawh = Obs.get_start_pos()
+    loadx, loady, lyawh = Obs.get_load_pos()
+    unloadx, unloady, uyawh = Obs.get_unload_pos()
+    obsx, obsy = Obs.get_obs_shape()
     barrierx, barriery = Obs.design_obstacles()
+
+    # Draw
+    Tcar.draw_car(startx, starty, syawh)
+    Tcar.draw_car(loadx, loady, lyawh)
+    Tcar.draw_car(unloadx, unloady, uyawh)
+    plt.plot(obsx, obsy, 'sr')
     plt.plot(barrierx, barriery, 'sk')
     plt.show()

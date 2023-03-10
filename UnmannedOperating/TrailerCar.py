@@ -42,7 +42,7 @@ class TrailerCar:
     def __init__(self) -> None:
         return
     
-    def draw_car(x, y, yaw, steer, color='black'):
+    def draw_car(self, x, y, yaw, steer=0.0, color='black'):
         C = ParaConfig()
         car = np.array([[-C.RB, -C.RB, C.RF, C.RF, -C.RB],
                         [C.W / 2, -C.W / 2, -C.W / 2, C.W / 2, C.W / 2]])
@@ -76,10 +76,10 @@ class TrailerCar:
         rlWheel = np.dot(Rot1, rlWheel)
         car = np.dot(Rot1, car)
 
-        frWheel += np.array([[x], [y]])
-        flWheel += np.array([[x], [y]])
-        rrWheel += np.array([[x], [y]])
-        rlWheel += np.array([[x], [y]])
+        frWheel = frWheel + np.array([[x], [y]])
+        flWheel = flWheel + np.array([[x], [y]])
+        rrWheel = rrWheel + np.array([[x], [y]])
+        rlWheel = rlWheel + np.array([[x], [y]])
         car += np.array([[x], [y]])
 
         plt.plot(car[0, :], car[1, :], color)
