@@ -1,6 +1,7 @@
 import numpy as np
+import math
 import matplotlib.pyplot as plt
-from math import atan, sin, cos, pi
+from math import pi
 from numpy import arange
 from config import ParaConfig
 
@@ -41,12 +42,9 @@ class TrailerCar:
     def __init__(self) -> None:
         return
     
-    def draw_model(self, x, y, yaw, yawt, steer, color='black'):
+    def draw_car(x, y, yaw, steer, color='black'):
         C = ParaConfig()
         car = np.array([[-C.RB, -C.RB, C.RF, C.RF, -C.RB],
-                    [C.W / 2, -C.W / 2, -C.W / 2, C.W / 2, C.W / 2]])
-
-        trail = np.array([[-C.RTB, -C.RTB, C.RTF, C.RTF, -C.RTB],
                         [C.W / 2, -C.W / 2, -C.W / 2, C.W / 2, C.W / 2]])
 
         wheel = np.array([[-C.TR, -C.TR, C.TR, C.TR, -C.TR],
@@ -56,17 +54,12 @@ class TrailerCar:
         rrWheel = wheel.copy()
         frWheel = wheel.copy()
         flWheel = wheel.copy()
-        rltWheel = wheel.copy()
-        rrtWheel = wheel.copy()
 
-        Rot1 = np.array([[cos(yaw), -sin(yaw)],
-                        [sin(yaw), cos(yaw)]])
+        Rot1 = np.array([[math.cos(yaw), -math.sin(yaw)],
+                        [math.sin(yaw), math.cos(yaw)]])
 
-        Rot2 = np.array([[cos(steer), -sin(steer)],
-                        [sin(steer), cos(steer)]])
-
-        Rot3 = np.array([[cos(yawt), -sin(yawt)],
-                        [sin(yawt), cos(yawt)]])
+        Rot2 = np.array([[math.cos(steer), math.sin(steer)],
+                        [-math.sin(steer), math.cos(steer)]])
 
         frWheel = np.dot(Rot2, frWheel)
         flWheel = np.dot(Rot2, flWheel)
@@ -83,29 +76,15 @@ class TrailerCar:
         rlWheel = np.dot(Rot1, rlWheel)
         car = np.dot(Rot1, car)
 
-        rltWheel += np.array([[-C.RTR], [C.WD / 2]])
-        rrtWheel += np.array([[-C.RTR], [-C.WD / 2]])
-
-        rltWheel = np.dot(Rot3, rltWheel)
-        rrtWheel = np.dot(Rot3, rrtWheel)
-        trail = np.dot(Rot3, trail)
-
         frWheel += np.array([[x], [y]])
         flWheel += np.array([[x], [y]])
         rrWheel += np.array([[x], [y]])
         rlWheel += np.array([[x], [y]])
-        rrtWheel += np.array([[x], [y]])
-        rltWheel += np.array([[x], [y]])
         car += np.array([[x], [y]])
-        trail += np.array([[x], [y]])
 
         plt.plot(car[0, :], car[1, :], color)
-        plt.plot(trail[0, :], trail[1, :], color)
         plt.plot(frWheel[0, :], frWheel[1, :], color)
         plt.plot(rrWheel[0, :], rrWheel[1, :], color)
         plt.plot(flWheel[0, :], flWheel[1, :], color)
         plt.plot(rlWheel[0, :], rlWheel[1, :], color)
-        plt.plot(rrtWheel[0, :], rrtWheel[1, :], color)
-        plt.plot(rltWheel[0, :], rltWheel[1, :], color)
         Arrow(x, y, yaw, C.WB * 0.8, color)
-        return
