@@ -6,19 +6,30 @@ import sys
 import os
 
 # Map Configuration
-XScale = 2
-YScale = 2
+XScale = float(2)
+YScale = float(2)
+plt.figure(figsize=(7, 11))
 current_directory = os.path.dirname(os.path.realpath(__file__))
 
 
-def read_csv_file(file_path):
+def read_pos_file(file_path):
     coordinates_list = []
     with open(file_path, 'r') as csv_file:
         csv_reader = csv.reader(csv_file)
         next(csv_reader)
         for row in csv_reader:
             x, y = map(float, row[0:2])
-            coordinates_list.append((x * XScale, y * YScale))
+            coordinates_list.append([x * XScale, y * YScale])
+    return coordinates_list
+
+def read_path_file(file_path):
+    coordinates_list = []
+    with open(file_path, 'r') as csv_file:
+        csv_reader = csv.reader(csv_file)
+        next(csv_reader)
+        for row in csv_reader:
+            x, y, yaw = map(float, row[0:3])
+            coordinates_list.append([x * XScale, y * YScale, yaw])
     return coordinates_list
 
 
@@ -48,17 +59,25 @@ def draw_map(obstacle_points, truck_points, parkingspot_points):
             plt.plot(x_values, y_values, color=color, linestyle='-')
 
 
-def main():
+def plot_map(show_flag=False):
     obstacle_file_path = os.path.join(current_directory, 'csvfiles', 'Obstaclecsv', 'obstacle_coordinates.csv')
     truck_file_path = os.path.join(current_directory, 'csvfiles', 'Truckcsv', 'truck_coordinates.csv')
     parkingspot_path = os.path.join(current_directory, 'csvfiles', 'Goalcsv', 'goal_coordinates.csv')
-    obstacle_points = design_rectangles(read_csv_file(obstacle_file_path), 1 * XScale, 2 * YScale)
-    truck_points = design_rectangles(read_csv_file(truck_file_path), 2 * XScale, 1 * YScale)
-    parkingspot_points = design_rectangles(read_csv_file(parkingspot_path), 2 * XScale, 1 * YScale)
-    draw_map(obstacle_points, truck_points, parkingspot_points)
-    plt.axis("equal")
-    plt.show()
+    obstacle_points = design_rectangles(read_pos_file(obstacle_file_path), 1 * XScale, 2 * YScale)
+    truck_points = design_rectangles(read_pos_file(truck_file_path), 2 * XScale, 1 * YScale)
+    parkingspot_points = design_rectangles(read_pos_file(parkingspot_path), 2 * XScale, 1 * YScale)
+    if show_flag:
+        draw_map(obstacle_points, truck_points, parkingspot_points)
+        plt.axis("equal")
+        plt.show()
+        print("map generate successfully")
+    return obstacle_points, truck_points, parkingspot_points
 
+
+def get_rl_path():
+    rl_file_path = os.path.join(current_directory, 'csvfiles', 'Pathcsv', 'path_coordinates.csv')
+    rl_points = read_path_file(rl_file_path)
+    return rl_points
 
 if __name__ == '__main__':
-    main()
+    plot_map()

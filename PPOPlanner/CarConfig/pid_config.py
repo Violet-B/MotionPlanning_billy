@@ -8,6 +8,8 @@ class C:
     dt = 0.1  # T step
     dist_stop = 0.7  # stop distance
     dc = 0.0
+    max_time = 100
+    sample_rate = 8
 
     # vehicle config
     RF = 3.3  # [m] distance from rear to vehicle front end of vehicle

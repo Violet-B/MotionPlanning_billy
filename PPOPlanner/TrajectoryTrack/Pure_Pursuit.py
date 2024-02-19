@@ -8,9 +8,20 @@ import os
 import sys
 import math
 import numpy as np
+from os import path
 import matplotlib.pyplot as plt
-import Utils.reeds_shepp as rs
-from pid_config import C
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+import TrajectoryTrack.reeds_shepp as rs
+from CarConfig.pid_config import C
+
+
+class Node:
+    def __init__(self, x, y, yaw, v, direct):
+        self.x = x
+        self.y = y
+        self.yaw = yaw
+        self.v = v
+        self.direct = direct
 
 
 class Nodes:
@@ -22,6 +33,14 @@ class Nodes:
         self.t = []
         self.direct = []
 
+    def add(self, t, node):
+        self.x.append(node.x)
+        self.y.append(node.y)
+        self.yaw.append(node.yaw)
+        self.v.append(node.v)
+        self.t.append(t)
+        self.direct.append(node.direct)
+
 
 class PATH:
     def __init__(self, cx, cy):
@@ -30,77 +49,43 @@ class PATH:
         self.ind_end = len(self.cx) - 1
         self.index_old = None
 
+    def target_index(self, node):
+        """
+        search index of target point in the reference path.
+        the distance between target point and current position is ld
+        :param node: current information
+        :return: index of target point
+        """
+        if self.index_old is None:
+            self.calc_nearest_ind(node)
+        Lf = C.kf * node.v + C.Ld
+        for ind in range(self.index_old, self.ind_end + 1):
+            if self.calc_distance(node, ind) > Lf:
+                self.index_old = ind
+                return ind, Lf
+        self.index_old = self.ind_end
 
-def generate_path(s):
-    """
-    divide paths into some sections, in each section, the direction is the same.
-    :param s: target position and yaw
-    :return: sections
-    """
+        return self.ind_end, Lf
 
-    max_c = math.tan(C.MAX_STEER) / C.WB  # max curvature
+    def calc_nearest_ind(self, node):
+        """
+        calc index of the nearest point to current position
+        :param node: current information
+        :return: index of nearest point
+        """
+        dx = [node.x - x for x in self.cx]
+        dy = [node.y - y for y in self.cy]
+        ind = np.argmin(np.hypot(dx, dy))
+        self.index_old = ind
 
-    path_x, path_y, yaw, direct = [], [], [], []
-    x_rec, y_rec, yaw_rec, direct_rec = [], [], [], []
-    direct_flag = 1.0
-
-    for i in range(len(s) - 1):
-        s_x, s_y, s_yaw = s[i][0], s[i][1], np.deg2rad(s[i][2])
-        g_x, g_y, g_yaw = s[i + 1][0], s[i + 1][1], np.deg2rad(s[i + 1][2])
-
-        path_i = rs.calc_optimal_path(s_x, s_y, s_yaw,
-                                      g_x, g_y, g_yaw, max_c)
-
-        ix = path_i.x
-        iy = path_i.y
-        iyaw = path_i.yaw
-        idirect = path_i.directions
-
-        for j in range(len(ix)):
-            if idirect[j] == direct_flag:
-                x_rec.append(ix[j])
-                y_rec.append(iy[j])
-                yaw_rec.append(iyaw[j])
-                direct_rec.append(idirect[j])
-            else:
-                if len(x_rec) == 0 or direct_rec[0] != direct_flag:
-                    direct_flag = idirect[j]
-                    continue
-
-                path_x.append(x_rec)
-                path_y.append(y_rec)
-                yaw.append(yaw_rec)
-                direct.append(direct_rec)
-                x_rec, y_rec, yaw_rec, direct_rec = \
-                    [x_rec[-1]], [y_rec[-1]], [yaw_rec[-1]], [-direct_rec[-1]]
-
-    path_x.append(x_rec)
-    path_y.append(y_rec)
-    yaw.append(yaw_rec)
-    direct.append(direct_rec)
-
-    x_all, y_all = [], []
-
-    for ix, iy in zip(path_x, path_y):
-        x_all += ix
-        y_all += iy
-
-    return path_x, path_y, yaw, direct, x_all, y_all
+    def calc_distance(self, node, ind):
+        return math.hypot(node.x - self.cx[ind], node.y - self.cy[ind])
 
 
-def main():
-    # generate path: [x, y, yaw]
-    states = [(0, 0, 0), (20, 15, 0), (35, 20, 90), (40, 0, 180),
-              (20, 0, 120), (5, -10, 180), (15, 5, 30)]
-    x, y, yaw, direct, path_x, path_y = generate_path(states)
-
-    # simulation
+def simulation(x, y, yaw, direct, path_x, path_y):
     maxTime = 100.0
     yaw_old = 0.0
     x0, y0, yaw0, direct0 = x[0][0], y[0][0], yaw[0][0], direct[0][0]
     x_rec, y_rec = [], []
 
-
-
-if __name__ == '__main__':
-    main()
+    
