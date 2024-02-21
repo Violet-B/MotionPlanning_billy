@@ -5,107 +5,79 @@ import csv
 import sys
 import os
 
-# sys.path.append(os.path.dirname(os.path.abspath(__file__)) +
-#                 "/../../MotionPlanning/")
+# Map Configuration
+XScale = float(2)
+YScale = float(2)
+plt.figure(figsize=(7, 11))
 current_directory = os.path.dirname(os.path.realpath(__file__))
 
-def read_csv_file(file_path):
-    coordinates_list = []
 
+def read_pos_file(file_path):
+    coordinates_list = []
     with open(file_path, 'r') as csv_file:
         csv_reader = csv.reader(csv_file)
-        
-        # Skip the header
         next(csv_reader)
-
         for row in csv_reader:
-            # Convert string values to float and create a tuple
             x, y = map(float, row[0:2])
-            coordinates_list.append((x, y))
-
+            coordinates_list.append([x * XScale, y * YScale])
     return coordinates_list
 
-def plot_rectangles(coordinates):
-    fig, ax = plt.subplots()
+def read_path_file(file_path):
+    coordinates_list = []
+    with open(file_path, 'r') as csv_file:
+        csv_reader = csv.reader(csv_file)
+        next(csv_reader)
+        for row in csv_reader:
+            x, y, yaw = map(float, row[0:3])
+            coordinates_list.append([x * XScale, y * YScale, yaw])
+    return coordinates_list
 
-    for (x, y) in coordinates:
-        # Create a rectangle centered at (x, y) with width=4 and height=2
-        rect = Rectangle((x - 2, y - 1), 4, 2, linewidth=1, edgecolor='black', facecolor='yellow')
-        ax.add_patch(rect)
 
-def design_24rectangles(points):
+def design_rectangles(points, x_offset, y_offset):
     connected_points = []
-
     for (x, y) in points:
-
-        # Append the four points
-        connected_points.append((x - 1, y + 2))
-        connected_points.append((x - 1, y - 2))
-        connected_points.append((x + 1, y - 2))
-        connected_points.append((x + 1, y + 2))
-        connected_points.append((x - 1, y + 2))
-    
-    # x_values, y_values = zip(*connected_points)
-
-    # return x_values, y_values
+        connected_points.extend([(x - x_offset, y + y_offset),
+                                 (x - x_offset, y - y_offset),
+                                 (x + x_offset, y - y_offset),
+                                 (x + x_offset, y + y_offset),
+                                 (x - x_offset, y + y_offset)])
     return connected_points
 
-def design_42rectangles(points):
-    connected_points = []
-
-    for (x, y) in points:
-
-        # Append the four points
-        connected_points.append((x - 2, y + 1))
-        connected_points.append((x - 2, y - 1))
-        connected_points.append((x + 2, y - 1))
-        connected_points.append((x + 2, y + 1))
-        connected_points.append((x - 2, y + 1))
-    
-    # x_values, y_values = zip(*connected_points)
-
-    # return x_values, y_values
-    return connected_points
 
 def draw_map(obstacle_points, truck_points, parkingspot_points):
     # draw outlines
-    x_values = [-35, 35, 35, -35, -35]
-    y_values = [-55, -55, 55, 55, -55]
-    plt.plot(x_values, y_values, color='black', linewidth=2)
+    x_outlines = [-35, 35, 35, -35, -35]
+    y_outlines = [-55, -55, 55, 55, -55]
+    x_outlines_scaled = [x * XScale for x in x_outlines]
+    y_outlines_scaled = [y * YScale for y in y_outlines]
+    plt.plot(x_outlines_scaled, y_outlines_scaled, color='black', linewidth=2)
 
-    # draw obstacles
-    for i in range(0, len(obstacle_points), 5):
-        x_values, y_values = zip(*obstacle_points[i:i+5])
-        plt.plot(x_values, y_values, color='blue', linestyle='-')
+    # draw obstacles, trucks, and parking spots
+    for points, color in zip([obstacle_points, truck_points, parkingspot_points], ['blue', 'red', 'yellow']):
+        for i in range(0, len(points), 5):
+            x_values, y_values = zip(*points[i:i+5])
+            plt.plot(x_values, y_values, color=color, linestyle='-')
 
-    # draw trucks
-    for i in range(0, len(truck_points), 5):
-        x_values, y_values = zip(*truck_points[i:i+5])
-        plt.plot(x_values, y_values, color='red', linestyle='-')
-        
-    # draw parking spot
-    for i in range(0, len(parkingspot_points), 5):
-        x_values, y_values = zip(*parkingspot_points[i:i+5])
-        plt.plot(x_values, y_values, color='yellow', linestyle='-')
 
-def main():
-
+def plot_map(show_flag=False):
     obstacle_file_path = os.path.join(current_directory, 'csvfiles', 'Obstaclecsv', 'obstacle_coordinates.csv')
     truck_file_path = os.path.join(current_directory, 'csvfiles', 'Truckcsv', 'truck_coordinates.csv')
     parkingspot_path = os.path.join(current_directory, 'csvfiles', 'Goalcsv', 'goal_coordinates.csv')
-    ObstacleCoordinates = read_csv_file(obstacle_file_path)
-    TruckCoordinates = read_csv_file(truck_file_path)
-    ParkingSpotCoordinates = read_csv_file(parkingspot_path)
+    obstacle_points = design_rectangles(read_pos_file(obstacle_file_path), 1 * XScale, 2 * YScale)
+    truck_points = design_rectangles(read_pos_file(truck_file_path), 2 * XScale, 1 * YScale)
+    parkingspot_points = design_rectangles(read_pos_file(parkingspot_path), 2 * XScale, 1 * YScale)
+    if show_flag:
+        draw_map(obstacle_points, truck_points, parkingspot_points)
+        plt.axis("equal")
+        plt.show()
+        print("map generate successfully")
+    return obstacle_points, truck_points, parkingspot_points
 
-    obstacle_points = design_24rectangles(ObstacleCoordinates)
-    truck_points = design_42rectangles(TruckCoordinates)
-    parkingspot_points = design_42rectangles(ParkingSpotCoordinates)
 
-    draw_map(obstacle_points, truck_points, parkingspot_points)
-
-    plt.axis("equal")
-    plt.show()
-
+def get_rl_path():
+    rl_file_path = os.path.join(current_directory, 'csvfiles', 'Pathcsv', 'path_coordinates.csv')
+    rl_points = read_path_file(rl_file_path)
+    return rl_points
 
 if __name__ == '__main__':
-    main()
+    plot_map()
