@@ -82,10 +82,47 @@ class PATH:
         return math.hypot(node.x - self.cx[ind], node.y - self.cy[ind])
 
 
-def simulation(x, y, yaw, direct, path_x, path_y):
-    maxTime = 100.0
-    yaw_old = 0.0
-    x0, y0, yaw0, direct0 = x[0][0], y[0][0], yaw[0][0], direct[0][0]
-    x_rec, y_rec = [], []
+def pure_pursuit(node, ref_path, index_old):
+    """
+    pure pursuit controller
+    :param node: current information
+    :param ref_path: reference path: x, y, yaw, curvature
+    :param index_old: target index of last time
+    :return: optimal steering angle
+    """
 
-    
+    ind, Lf = ref_path.target_index(node)  # target point and pursuit distance
+    ind = max(ind, index_old)
+
+    tx = ref_path.cx[ind]
+    ty = ref_path.cy[ind]
+
+    alpha = math.atan2(ty - node.y, tx - node.x) - node.yaw
+    delta = math.atan2(2.0 * C.WB * math.sin(alpha), Lf)
+
+    return delta, ind
+
+
+def pid_control(target_v, v, dist, direct):
+    """
+    PID controller and design speed profile.
+    :param target_v: target speed (forward and backward are different)
+    :param v: current speed
+    :param dist: distance from current position to end position
+    :param direct: current direction
+    :return: desired acceleration
+    """
+
+    a = 0.3 * (target_v - direct * v)
+
+    if dist < 10.0:
+        if v > 3.0:
+            a = -2.5
+        elif v < -2.0:
+            a = -1.0
+
+    return a
+
+
+def simulation(x, y, yaw, direct, path_x, path_y):
+   return
