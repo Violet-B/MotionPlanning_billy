@@ -11,7 +11,7 @@ import sys, os
 from ControlAlgorithm.LQR_Kinematic_Model import control_Kinematic
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) +
-                "/../../MotionPlanning/")
+                "/../../MotionPlanning_billy/")
 
 def draw_path(Tcar, path, C, Obs):
     x = path.x
