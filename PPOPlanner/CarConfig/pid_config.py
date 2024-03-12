@@ -15,7 +15,7 @@ class C:
     dist_stop = 0.7  # stop distance
     dc = 0.0
 
-    max_time = 100
+    maxTime = 100
     sample_rate = 8
 
     # # vehicle config

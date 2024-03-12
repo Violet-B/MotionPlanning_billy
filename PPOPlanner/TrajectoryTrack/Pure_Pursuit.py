@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 import TrajectoryTrack.reeds_shepp as rs
 from CarConfig.pid_config import C
+from Utils import draw
 
 
 class Node:
@@ -22,6 +23,24 @@ class Node:
         self.yaw = yaw
         self.v = v
         self.direct = direct
+        
+    def update(self, a, delta, direct):
+        # delta = self.limit_input(delta)
+        self.x += self.v * math.cos(self.yaw) * C.dt
+        self.y += self.v * math.sin(self.yaw) * C.dt
+        self.yaw += self.v / C.WB * math.tan(delta) * C.dt
+        self.direct = direct
+        self.v += self.direct * a * C.dt
+
+    @staticmethod
+    def limit_input(delta):
+        if delta > 1.2 * C.MAX_STEER:
+            return 1.2 * C.MAX_STEER
+
+        if delta < -1.2 * C.MAX_STEER:
+            return -1.2 * C.MAX_STEER
+
+        return delta
 
 
 class Nodes:
@@ -124,5 +143,82 @@ def pid_control(target_v, v, dist, direct):
     return a
 
 
-def simulation(x, y, yaw, direct, path_x, path_y):
-   return
+
+def CarControl(x, y, yaw, direct, path_x, path_y):
+    yaw_old = 0.0
+    x0, y0, yaw0, direct0 = x[0][0], y[0][0], yaw[0][0], direct[0][0]
+    x_rec, y_rec = [], []
+
+    for cx, cy, cyaw, cdirect in zip(x, y, yaw, direct):
+        t = 0.0
+        node = Node(x=x0, y=y0, yaw=yaw0, v=0.0, direct=direct0)
+        nodes = Nodes()
+        nodes.add(t, node)
+        ref_trajectory = PATH(cx, cy)
+        target_ind, _ = ref_trajectory.target_index(node)
+
+        while t <= C.maxTime:
+            if cdirect[0] > 0:
+                target_speed = 30.0 / 3.6
+                C.Ld = 4.0
+                C.dist_stop = 1.5
+                C.dc = -1.1
+            else:
+                target_speed = 20.0 / 3.6
+                C.Ld = 2.5
+                C.dist_stop = 0.2
+                C.dc = 0.2
+
+            xt = node.x + C.dc * math.cos(node.yaw)
+            yt = node.y + C.dc * math.sin(node.yaw)
+            dist = math.hypot(xt - cx[-1], yt - cy[-1])
+
+            if dist < C.dist_stop:
+                break
+
+            acceleration = pid_control(target_speed, node.v, dist, cdirect[0])
+            delta, target_ind = pure_pursuit(node, ref_trajectory, target_ind)
+
+            t += C.dt
+
+            node.update(acceleration, delta, cdirect[0])
+            nodes.add(t, node)
+            x_rec.append(node.x)
+            y_rec.append(node.y)
+
+            dy = (node.yaw - yaw_old) / (node.v * C.dt)
+            steer = rs.pi_2_pi(-math.atan(C.WB * dy))
+
+            yaw_old = node.yaw
+            x0 = nodes.x[-1]
+            y0 = nodes.y[-1]
+            yaw0 = nodes.yaw[-1]
+            direct0 = nodes.direct[-1]
+
+            # animation
+            plt.cla()
+            plt.plot(node.x, node.y, marker='.', color='k')
+            plt.plot(path_x, path_y, color='gray', linewidth=2)
+            plt.plot(x_rec, y_rec, color='darkviolet', linewidth=2)
+            plt.plot(cx[target_ind], cy[target_ind], ".r")
+            draw.draw_car(node.x, node.y, yaw_old, steer, C)
+
+            # for m in range(len(states)):
+            #     draw.Arrow(states[m][0], states[m][1], np.deg2rad(states[m][2]), 2, 'blue')
+
+            plt.axis("equal")
+            plt.title("PurePursuit: v=" + str(node.v * 3.6)[:4] + "km/h")
+            plt.gcf().canvas.mpl_connect('key_release_event',
+                                         lambda event:
+                                         [exit(0) if event.key == 'escape' else None])
+            plt.pause(0.001)
+
+    plt.show()
+
+
+
+def DrawPath(path_x, path_y):
+    plt.cla()
+    plt.plot(path_x, path_y, color='gray', linewidth=2)
+    plt.axis('equal')
+    plt.show()
