@@ -4,10 +4,11 @@ from matplotlib.patches import Rectangle
 import csv
 import sys
 import os
+import pandas as pd
 
 # Map Configuration
-XScale = float(2)
-YScale = float(2)
+XScale = float(1)
+YScale = float(1)
 plt.figure(figsize=(7, 11))
 current_directory = os.path.dirname(os.path.realpath(__file__))
 
@@ -28,7 +29,7 @@ def read_path_file(file_path):
         csv_reader = csv.reader(csv_file)
         next(csv_reader)
         for row in csv_reader:
-            x, y, yaw = map(float, row[0:3])
+            x, y, yaw = map(float, row[1:4])
             coordinates_list.append([x * XScale, y * YScale, yaw])
     return coordinates_list
 
@@ -59,7 +60,7 @@ def draw_map(obstacle_points, truck_points, parkingspot_points):
             plt.plot(x_values, y_values, color=color, linestyle='-')
 
 
-def plot_map(show_flag=False):
+def plot_map(show_flag=True):
     obstacle_file_path = os.path.join(current_directory, 'csvfiles', 'Obstaclecsv', 'obstacle_coordinates.csv')
     truck_file_path = os.path.join(current_directory, 'csvfiles', 'Truckcsv', 'truck_coordinates.csv')
     parkingspot_path = os.path.join(current_directory, 'csvfiles', 'Goalcsv', 'goal_coordinates.csv')
@@ -78,6 +79,15 @@ def get_rl_path():
     rl_file_path = os.path.join(current_directory, 'csvfiles', 'Pathcsv', 'path_coordinates.csv')
     rl_points = read_path_file(rl_file_path)
     return rl_points
+
+def get_rl_goal():
+    rl_file_path = os.path.join(current_directory, 'csvfiles', 'Goalcsv', 'goal_coordinates.csv')
+    parking_spot = pd.read_csv(rl_file_path)
+    parking_spot_x = parking_spot['X']
+    goalx = parking_spot_x[0]
+    parking_spot_y = parking_spot['Z']
+    goaly = parking_spot_y[0]
+    return XScale * goalx, YScale * goaly
 
 if __name__ == '__main__':
     plot_map()
