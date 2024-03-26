@@ -38,7 +38,6 @@ def no_sampling_zone(x, y, angle, goalx, goaly, leftx, rightx, upy, downy):
 
 # 根据三点坐标计算(x2,y2)点处的夹角
 def count_angle(x1,y1,x2,y2,x3,y3):
-def count_angle(x1,y1,x2,y2,x3,y3):
     if x2-x1!=0:
         k1 = (y2-y1)/(x2-x1)
     elif x2-x1==0: 
@@ -70,7 +69,6 @@ def is_turning_point(x1,y1,x2,y2,x3,y3):
     Angle = count_angle(x1,y1,x2,y2,x3,y3)
 
 
-    if d>distance_threshold or Angle>angle_difference_threshold:
     if d>distance_threshold or Angle>angle_difference_threshold:
          return True
     else:
