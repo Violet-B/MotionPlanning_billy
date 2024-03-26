@@ -95,6 +95,7 @@ def get_last_three(x_turning, y_turning, angle_turning, goalx, goaly):
 def get_sample_points(x, y, angle, goalx, goaly):
     # 选出非采样区
     x, y, angle = no_sampling_zone(x, y, angle, goalx, goaly, 3, 2, 3, 3)
+    angle = list(angle)
     n = pc.C.sample_rate #采样步长
     l=len(x)
     point_number = 0
@@ -195,5 +196,5 @@ def produce_files(index):
         print(f'Data has been written to {csv_file_path}')
 
 if __name__ == '__main__':
-    show()
-    # produce_files(3)
+    # show()
+    produce_files(3)

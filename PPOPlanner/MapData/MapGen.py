@@ -75,13 +75,13 @@ def plot_map(show_flag=True):
     return obstacle_points, truck_points, parkingspot_points
 
 
-def get_rl_path():
-    rl_file_path = os.path.join(current_directory, 'csvfiles', 'Pathcsv', 'path_coordinates.csv')
+def get_rl_path(index):
+    rl_file_path = os.path.join(current_directory, 'csvfiles', 'Pathcsv', f'path_coordinates_{index}.csv')
     rl_points = read_path_file(rl_file_path)
     return rl_points
 
-def get_rl_goal():
-    rl_file_path = os.path.join(current_directory, 'csvfiles', 'Goalcsv', 'goal_coordinates.csv')
+def get_rl_goal(index):
+    rl_file_path = os.path.join(current_directory, 'csvfiles', 'Goalcsv', f'goal_coordinates_{index}.csv')
     parking_spot = pd.read_csv(rl_file_path)
     parking_spot_x = parking_spot['X']
     goalx = parking_spot_x[0]

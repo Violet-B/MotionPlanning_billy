@@ -6,10 +6,11 @@ import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
     # Init map infomation
+    index = 3 # to choose which path to generate
     obs_points, truck_points, park_points = plot_map(show_flag=False)
-    rl_states = get_rl_path()
-    x, y, angle = zip(*rl_states)
-    goalx, goaly = get_rl_goal()
+    rl_states = get_rl_path(index)
+    x, y, angle = list(zip(*rl_states))
+    goalx, goaly = get_rl_goal(index)
     x_turning, y_turning, angle_turning, point_number = get_sample_points(x, y, angle, goalx, goaly)
     states_downsample = [[a, b, c] for a, b, c in zip(x_turning, y_turning, angle_turning)]
     # states_downsample = rl_states[::C.sample_rate]
