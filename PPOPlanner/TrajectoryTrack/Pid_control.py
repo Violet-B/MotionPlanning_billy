@@ -75,7 +75,8 @@ class PID:
             self.sample_time = sample_time
 
 # Test
-pid = PID()
-pid.set_setpoint(10.0)
-pid.set_params(Kp=1.0, Ki=0.5, Kd=0.2)
-acceleration = pid.update(set_value=2, feedback_value=3, current_time=0.05)
+if __name__ == '__main__':
+    pid = PID()
+    pid.set_setpoint(10.0)
+    pid.set_params(Kp=1.0, Ki=0.5, Kd=0.2)
+    acceleration = pid.update(set_value=2, feedback_value=3, current_time=0.05)
