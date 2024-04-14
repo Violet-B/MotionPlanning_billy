@@ -9,11 +9,13 @@ import sys
 import math
 import numpy as np
 from os import path
-import matplotlib.pyplot as plt
 sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+import matplotlib.pyplot as plt
 import TrajectoryTrack.reeds_shepp as rs
 from CarConfig.pid_config import C
 from Utils import draw
+from TrajectoryTrack.Pid_control import PID
+import time
 
 
 class Node:
@@ -151,6 +153,8 @@ def CarControl(x, y, yaw, direct, path_x, path_y):
 
     for cx, cy, cyaw, cdirect in zip(x, y, yaw, direct):
         t = 0.0
+        pid_c = PID(current_time=t)
+        
         node = Node(x=x0, y=y0, yaw=yaw0, v=0.0, direct=direct0)
         nodes = Nodes()
         nodes.add(t, node)
@@ -176,7 +180,8 @@ def CarControl(x, y, yaw, direct, path_x, path_y):
             if dist < C.dist_stop:
                 break
 
-            acceleration = pid_control(target_speed, node.v, dist, cdirect[0])
+            # acceleration = pid_control(target_speed, node.v, dist, cdirect[0])
+            acceleration = pid_c.update(set_value=target_speed, feedback_value=node.v * cdirect[0], current_time=t)
             delta, target_ind = pure_pursuit(node, ref_trajectory, target_ind)
 
             t += C.dt
