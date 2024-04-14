@@ -1,3 +1,8 @@
+"""
+Pure Pursuit For RL
+authors: Wang Ning; Yang Hongyi
+Date: 2024-04-014
+"""
 import time
  
 class PID:
@@ -55,3 +60,22 @@ class PID:
         
         self.output = (self.Kp * error) + (self.Ki * self.ITerm) + (self.Kd * self.DTerm)
         return self.output
+
+    def set_setpoint(self, set_point):
+        self.set_point = set_point
+
+    def set_params(self, Kp=None, Ki=None, Kd=None, sample_time=None):
+        if Kp is not None:
+            self.Kp = Kp
+        if Ki is not None:
+            self.Ki = Ki
+        if Kd is not None:
+            self.Kd = Kd
+        if sample_time is not None:
+            self.sample_time = sample_time
+
+# Test
+pid = PID()
+pid.set_setpoint(10.0)
+pid.set_params(Kp=1.0, Ki=0.5, Kd=0.2)
+acceleration = pid.update(set_value=2, feedback_value=3, current_time=0.05)
